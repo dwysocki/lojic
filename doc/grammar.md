@@ -46,6 +46,8 @@ RP     : ')'
        ;
 EOL    : '\n'
        ;
+NULL   : ''
+       ;
 ```
 
 # Broken Down Grammar
@@ -65,6 +67,39 @@ Exp1   : Exp1  OR Exp2 | Exp2
 Exp2   : Exp2 XOR Exp3 | Exp3
        ;
 Exp3   :     NOT Exp
+       | LP  Exp  RP
+       | ID
+       | TRUE
+       | FALSE
+       ;
+```
+
+# Transformed Grammar
+
+```antlr
+S      : Assign EOL
+       | Query  EOL
+       ;
+Assign : ID EQ Exp
+       ;
+Query  : ID QMARK
+       ;
+Exp    : Exp1 Exp'
+       ;
+Exp'   : AND Exp1 Exp'
+       | NULL
+       ;
+Exp1   : Exp2 Exp1'
+       ;
+Exp1'  :  OR Exp2 Exp1'
+       | NULL
+       ;
+Exp2   : Exp3 Exp2'
+       ;
+Exp2'  : XOR Exp3 Exp2'
+       | NULL
+       ;
+Exp3   : NOT Exp
        | LP  Exp  RP
        | ID
        | TRUE
