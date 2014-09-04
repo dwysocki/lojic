@@ -84,19 +84,19 @@ Assign : ID EQ Exp
        ;
 Query  : ID QMARK
        ;
-Exp    : Exp1 Exp'
+Exp    : Exp1 Exp_
        ;
-Exp'   : AND Exp1 Exp'
+Exp_   : AND Exp1 Exp_
        | NULL
        ;
-Exp1   : Exp2 Exp1'
+Exp1   : Exp2 Exp1_
        ;
-Exp1'  :  OR Exp2 Exp1'
+Exp1_  :  OR Exp2 Exp1_
        | NULL
        ;
-Exp2   : Exp3 Exp2'
+Exp2   : Exp3 Exp2_
        ;
-Exp2'  : XOR Exp3 Exp2'
+Exp2_  : XOR Exp3 Exp2_
        | NULL
        ;
 Exp3   : NOT Exp
