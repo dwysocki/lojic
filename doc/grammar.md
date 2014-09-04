@@ -33,7 +33,7 @@ Exp    : Exp  AND Exp1 | Exp1
        ;
 Exp1   : Exp1  OR Exp2 | Exp2
        ;
-Exp2   | Exp2 XOR Exp3 | Exp3
+Exp2   : Exp2 XOR Exp3 | Exp3
        ;
 Exp3   :     NOT Exp
        | LP  Exp  RP
