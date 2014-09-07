@@ -17,5 +17,6 @@
        (prompt prompt-str)
        (let [input  (read-line)
              output (evaluator input)]
-         (println output)
+         (when output
+           (println output))
          (recur)))))

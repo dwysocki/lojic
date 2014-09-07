@@ -1,4 +1,5 @@
-(ns lojic.parser)
+(ns lojic.parser
+  (:require [lojic.util :as util]))
 
 (declare parser-identifier
          parser-assignment
@@ -34,8 +35,8 @@
 
 (defn parse-error
   ([expected got]
-     (ex-info (clojure.string/join "" ["Expected " expected
-                                       ", but got " got])
+     (ex-info (str "Expected " (util/or-list expected)
+                   ", but got " got)
               {:cause :parse-error})))
 
 (defn parser
@@ -61,26 +62,27 @@
        (case operator
          \= (parser-assignment identifier (rest tokens))
          \? (parser-query      identifier (rest tokens))
-         (throw (parse-error "= or ?" identifier))))))
+         (throw (parse-error ["=", "?"] identifier))))))
 
 (defn- parser-assignment
   ([identifier tokens]
-     (let [tok (first tokens)]
+     (if-let [tok (first tokens)]
        (if (-> tokens rest seq)
-         (throw (parse-error "\\n" (second tokens)))
+         (throw (parse-error ["\\n"] (second tokens)))
          (cond
           (identifier? tok) (set-variable identifier
                                           (get-variable tok))
           (boolean? tok) (set-variable identifier (parser-boolean tok))
-          :default (throw (parse-error "[a-z], or [0-1]" tok)))))
-     ; assignment should return nothing, so display the empty string
-     "\b\b"))
+          :default (throw (parse-error ["[a-z]", "[0-1]"] tok))))
+       (throw (parse-error ["[a-z]", "[0-1]"] "\\n")))
+     ; assignment returns nothing
+     nil))
 
 (defn- parser-query
   ([identifier tokens]
      (if (empty? tokens)
        (get-variable identifier)
-       (throw (parse-error "\\n" (first tokens))))))
+       (throw (parse-error ["\\n"] (first tokens))))))
 
 (defn- parser-boolean
   ([token]

@@ -1,4 +1,4 @@
-(defproject lojic "0.1.1-SNAPSHOT"
+(defproject lojic "0.1.1"
   :description "CSC444 Exercise 1: An interpreter written in clojure which
                 interprets a simple language which only involves boolean logic."
   :url "https://github.com/dwysocki/lojic"
