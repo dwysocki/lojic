@@ -1,5 +1,6 @@
 (ns lojic.core
-  (:require [lojic.repl :refer [repl]])
+  (:require [lojic.parser :refer [parser]]
+            [lojic.repl   :refer [repl]])
   (:gen-class))
 
 (defn- test-evaluator
@@ -12,4 +13,4 @@
 (defn -main
   "I don't do a whole lot ... yet."
   ([& args]
-     (repl test-evaluator)))
+     (repl parser)))
