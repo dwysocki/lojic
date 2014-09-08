@@ -13,10 +13,13 @@
   ([evaluator]
      (repl evaluator "# "))
   ([evaluator prompt-str]
+     (repl evaluator prompt-str ""))
+  ([evaluator prompt-str exit-msg]
      (loop []
        (prompt prompt-str)
-       (let [input  (read-line)
-             output (evaluator input)]
-         (when output
-           (println output))
-         (recur)))))
+       (if-let [input  (read-line)]
+         (let [output (evaluator input)]
+           (when output
+             (println output))
+           (recur))
+         (println exit-msg)))))
