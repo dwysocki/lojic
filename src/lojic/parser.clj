@@ -4,15 +4,20 @@
 (declare parser-identifier
          parser-assignment
          parser-query
-         parser-boolean)
-
-(defn boolean?
-  ([token]
-     (apply <= (map int [\0 token \1]))))
+         parser-expression
+         parser-and
+         parser-or
+         parser-xor
+         parser-not-paren-id-lit
+         parser-literal)
 
 (defn identifier?
   ([token]
      (apply <= (map int [\a token \z]))))
+
+(defn literal?
+  ([token]
+     (apply <= (map int [\0 token \1]))))
 
 (def variables
   (int-array (apply - (map int [\z \a]))))
@@ -66,17 +71,23 @@
 
 (defn- parser-assignment
   ([identifier tokens]
-     (if-let [tok (first tokens)]
-       (if (-> tokens rest seq)
-         (throw (parse-error ["\\n"] (second tokens)))
-         (cond
-          (identifier? tok) (set-variable identifier
-                                          (get-variable tok))
-          (boolean? tok) (set-variable identifier (parser-boolean tok))
-          :default (throw (parse-error ["[a-z]", "[0-1]"] tok))))
-       (throw (parse-error ["[a-z]", "[0-1]"] "\\n")))
-     ; assignment returns nothing
+     (set-variable identifier (parser-expression tokens))
+     ; successful assignment is silent, so return nil
      nil))
+
+
+     ;; (if-let [tok (first tokens)]
+       
+     ;;   (if (-> tokens rest seq)
+     ;;     (throw (parse-error ["\\n"] (second tokens)))
+     ;;     (cond
+     ;;      (identifier? tok) (set-variable identifier
+     ;;                                      (get-variable tok))
+     ;;      (boolean? tok) (set-variable identifier (parser-boolean tok))
+     ;;      :default (throw (parse-error ["[a-z]", "[0-1]"] tok))))
+     ;;   (throw (parse-error ["[a-z]", "[0-1]"] "\\n")))
+     ;; ; assignment returns nothing
+     ;; nil))
 
 (defn- parser-query
   ([identifier tokens]
@@ -84,6 +95,53 @@
        (get-variable identifier)
        (throw (parse-error ["\\n"] (first tokens))))))
 
-(defn- parser-boolean
+(defn- parser-expression
+  ([tokens]
+     (let [[r tokens] (parser-and tokens)]
+       (if (empty? tokens)
+         r
+         (throw (parse-error ["\\n"] (first tokens)))))))
+
+(defn- parser-and
+  ([tokens]
+     (let [[r tokens] (parser-or tokens)]
+       (if (= (first tokens) \&)
+         (let [[-r tokens] (parser-and (rest tokens))]
+           [(bit-and r -r) tokens])
+         [r tokens]))))
+
+(defn- parser-or
+  ([tokens]
+     (let [[r tokens] (parser-xor tokens)]
+       (if (= (first tokens) \|)
+         (let [[-r tokens] (parser-or (rest tokens))]
+           [(bit-or r -r) tokens])
+         [r tokens]))))
+
+(defn- parser-xor
+  ([tokens]
+     (let [[r tokens] (parser-not-paren-id-lit tokens)]
+       (if (= (first tokens) \^)
+         (let [[-r tokens] (parser-xor (rest tokens))]
+           [(bit-xor r -r) tokens])
+         [r tokens]))))
+
+(defn- parser-not-paren-id-lit
+  ([tokens]
+     (let [tok (first tokens)]
+       (cond
+        ; not
+        (= tok \~) (let [[r tokens] (parser-and (rest tokens))]
+                     [(bit-or r) tokens])
+        (= tok \() (let [[r tokens] (parser-and (rest tokens))
+                         tok (first tokens)]
+                     (if (= tok \))
+                       [r tokens]
+                       (throw (parse-error [")"] tok))))
+        (identifier? tok) [(get-variable tok) (rest tokens)]
+        (literal? tok) [(parser-literal tok) (rest tokens)]
+        :default (throw (parse-error ["~" "(" "[a-z]" "[0-1]"] tok))))))
+
+(defn- parser-literal
   ([token]
      (apply - (map int [token \0]))))
