@@ -132,7 +132,7 @@
        (cond
         ; not
         (= tok \~) (let [[r tokens] (parser-and (rest tokens))]
-                     [(bit-or r) tokens])
+                     [(bit-xor r 1) tokens])
         (= tok \() (let [[r tokens] (parser-and (rest tokens))
                          tok (first tokens)]
                      (if (= tok \))
