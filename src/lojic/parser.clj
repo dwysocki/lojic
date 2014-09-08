@@ -5,19 +5,23 @@
          parser-assignment
          parser-query
          parser-expression
-         parser-and
          parser-or
          parser-xor
+         parser-and
+         parser-not
+         parser-paren-id-lit
          parser-not-paren-id-lit
          parser-literal)
 
 (defn identifier?
   ([token]
-     (apply <= (map int [\a token \z]))))
+     (when token
+       (apply <= (map int [\a token \z])))))
 
 (defn literal?
   ([token]
-     (apply <= (map int [\0 token \1]))))
+     (when token
+       (apply <= (map int [\0 token \1])))))
 
 (def variables
   (int-array (apply - (map int [\z \a]))))
@@ -40,9 +44,10 @@
 
 (defn parse-error
   ([expected got]
-     (ex-info (str "Expected " (util/or-list expected)
-                   ", but got " got)
-              {:cause :parse-error})))
+     (let [got (or got "\\n")]
+       (ex-info (str "Expected " (util/or-list expected)
+                     ", but got " got)
+                {:cause :parse-error}))))
 
 (defn parser
   ([input]
@@ -122,11 +127,34 @@
 
 (defn- parser-and
   ([tokens]
-     (let [[r tokens] (parser-not-paren-id-lit tokens)]
+     (let [[r tokens] (parser-not tokens)]
        (if (= (first tokens) \&)
          (let [[-r tokens] (parser-and (rest tokens))]
            [(bit-and r -r) tokens])
          [r tokens]))))
+
+(defn- parser-not
+  ([tokens]
+     (if (= (first tokens) \~)
+       (let [[r tokens] (parser-not (rest tokens))]
+         [(bit-xor r 1) tokens])
+       (parser-paren-id-lit tokens))))
+
+(defn- parser-paren-id-lit
+  ([tokens]
+     (let [tok (first tokens)]
+       (cond
+        ; parenthesis
+        (= tok \() (let [[r tokens] (parser-or (rest tokens))
+                         tok (first tokens)]
+                     (if (= tok \))
+                       [r (rest tokens)]
+                       (throw (parse-error [")"] tok))))
+        ; identifier
+        (identifier? tok) [(get-variable tok) (rest tokens)]
+        ; literal
+        (literal? tok) [(parser-literal tok) (rest tokens)]
+        :default (throw (parse-error ["~" "(" "[a-z]" "[0-1]"] tok))))))
 
 (defn- parser-not-paren-id-lit
   ([tokens]
