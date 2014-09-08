@@ -97,18 +97,12 @@
 
 (defn- parser-expression
   ([tokens]
-     (let [[r tokens] (parser-and tokens)]
+     (let [[r tokens] (parser-or tokens)]
        (if (empty? tokens)
          r
          (throw (parse-error ["\\n"] (first tokens)))))))
 
-(defn- parser-and
-  ([tokens]
-     (let [[r tokens] (parser-or tokens)]
-       (if (= (first tokens) \&)
-         (let [[-r tokens] (parser-and (rest tokens))]
-           [(bit-and r -r) tokens])
-         [r tokens]))))
+
 
 (defn- parser-or
   ([tokens]
@@ -120,10 +114,18 @@
 
 (defn- parser-xor
   ([tokens]
-     (let [[r tokens] (parser-not-paren-id-lit tokens)]
+     (let [[r tokens] (parser-and tokens)]
        (if (= (first tokens) \^)
          (let [[-r tokens] (parser-xor (rest tokens))]
            [(bit-xor r -r) tokens])
+         [r tokens]))))
+
+(defn- parser-and
+  ([tokens]
+     (let [[r tokens] (parser-not-paren-id-lit tokens)]
+       (if (= (first tokens) \&)
+         (let [[-r tokens] (parser-and (rest tokens))]
+           [(bit-and r -r) tokens])
          [r tokens]))))
 
 (defn- parser-not-paren-id-lit
@@ -131,14 +133,17 @@
      (let [tok (first tokens)]
        (cond
         ; not
-        (= tok \~) (let [[r tokens] (parser-and (rest tokens))]
+        (= tok \~) (let [[r tokens] (parser-or (rest tokens))]
                      [(bit-xor r 1) tokens])
-        (= tok \() (let [[r tokens] (parser-and (rest tokens))
+        ; parenthesis
+        (= tok \() (let [[r tokens] (parser-or (rest tokens))
                          tok (first tokens)]
                      (if (= tok \))
-                       [r tokens]
+                       [r (rest tokens)]
                        (throw (parse-error [")"] tok))))
+        ; identifier
         (identifier? tok) [(get-variable tok) (rest tokens)]
+        ; literal
         (literal? tok) [(parser-literal tok) (rest tokens)]
         :default (throw (parse-error ["~" "(" "[a-z]" "[0-1]"] tok))))))
 
