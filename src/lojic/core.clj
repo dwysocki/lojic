@@ -3,14 +3,19 @@
             [lojic.repl   :refer [repl]])
   (:gen-class))
 
-(defn- test-evaluator
-  ([input]
-     (case input
-       "hello" "Hi there!"
-       "quit" (do (println "Goodbye!") (System/exit 0))
-       "Error!")))
+(defn- line-numbering-pushback-reader
+  ([filename]
+     (clojure.lang.LineNumberingPushbackReader.
+      (java.io.FileReader. filename))))
 
 (defn -main
   "I don't do a whole lot ... yet."
   ([& args]
-     (repl parser)))
+     (try
+       (case (count args)
+         0 (repl parser)
+         1 (binding [*in* (line-numbering-pushback-reader (first args))]
+             (repl parser ""))
+         (println "Usage: lojic [filename]"))
+       (catch java.io.FileNotFoundException e
+           (println "File" (first args) "not found.")))))
