@@ -10,7 +10,6 @@
          parser-and
          parser-not
          parser-paren-id-lit
-         parser-not-paren-id-lit
          parser-literal)
 
 (defn identifier?
@@ -55,11 +54,7 @@
            tok    (first tokens)]
        (try
          (cond
-          ; this is making it crash :\
           (identifier? tok) (parser-identifier tok (rest tokens))
-          ; replace this with an exception.
-          ; make a special ex-info wrapper function which provides it with
-          ; the "Expected ___ got ___" messages
           :default (clojure.string/join " " ["Expected a-z, but got" tok]))
          (catch clojure.lang.ExceptionInfo e
            (if (= :parse-error (-> e ex-data :cause))
@@ -80,20 +75,6 @@
      ; successful assignment is silent, so return nil
      nil))
 
-
-     ;; (if-let [tok (first tokens)]
-       
-     ;;   (if (-> tokens rest seq)
-     ;;     (throw (parse-error ["\\n"] (second tokens)))
-     ;;     (cond
-     ;;      (identifier? tok) (set-variable identifier
-     ;;                                      (get-variable tok))
-     ;;      (boolean? tok) (set-variable identifier (parser-boolean tok))
-     ;;      :default (throw (parse-error ["[a-z]", "[0-1]"] tok))))
-     ;;   (throw (parse-error ["[a-z]", "[0-1]"] "\\n")))
-     ;; ; assignment returns nothing
-     ;; nil))
-
 (defn- parser-query
   ([identifier tokens]
      (if (empty? tokens)
@@ -106,8 +87,6 @@
        (if (empty? tokens)
          r
          (throw (parse-error ["\\n"] (first tokens)))))))
-
-
 
 (defn- parser-or
   ([tokens]
@@ -144,25 +123,6 @@
   ([tokens]
      (let [tok (first tokens)]
        (cond
-        ; parenthesis
-        (= tok \() (let [[r tokens] (parser-or (rest tokens))
-                         tok (first tokens)]
-                     (if (= tok \))
-                       [r (rest tokens)]
-                       (throw (parse-error [")"] tok))))
-        ; identifier
-        (identifier? tok) [(get-variable tok) (rest tokens)]
-        ; literal
-        (literal? tok) [(parser-literal tok) (rest tokens)]
-        :default (throw (parse-error ["~" "(" "[a-z]" "[0-1]"] tok))))))
-
-(defn- parser-not-paren-id-lit
-  ([tokens]
-     (let [tok (first tokens)]
-       (cond
-        ; not
-        (= tok \~) (let [[r tokens] (parser-or (rest tokens))]
-                     [(bit-xor r 1) tokens])
         ; parenthesis
         (= tok \() (let [[r tokens] (parser-or (rest tokens))
                          tok (first tokens)]
