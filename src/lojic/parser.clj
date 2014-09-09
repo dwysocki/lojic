@@ -55,7 +55,7 @@
        (try
          (cond
           (identifier? tok) (parser-identifier tok (rest tokens))
-          :default (clojure.string/join " " ["Expected a-z, but got" tok]))
+          :default (throw (parse-error ["[a-z]"] tok)))
          (catch clojure.lang.ExceptionInfo e
            (if (= :parse-error (-> e ex-data :cause))
              (.getMessage e)
