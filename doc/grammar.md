@@ -53,56 +53,66 @@ NULL   : ''
 # Broken Down Grammar
 
 ```antlr
-S      : Assign EOL
-       | Query  EOL
+S      : ID S_ EOL
        ;
-Assign : ID EQ Exp
+S_     : Assign
+       | Query
        ;
-Query  : ID QMARK
+Assign : EQ Exp
        ;
-Exp    : Exp  AND Exp1 | Exp1
+Query  : QMARK
        ;
-Exp1   : Exp1  OR Exp2 | Exp2
-       ;
-Exp2   : Exp2 XOR Exp3 | Exp3
-       ;
-Exp3   :     NOT Exp
-       | LP  Exp  RP
+E      : T  OR T
+       | T
+	   ;
+T      : F XOR F
+       | F
+	   ;
+F      : A AND A
+       | A
+	   ;
+A      :   NOT A
+       | G
+	   ;
+G      : LP EXP RP
        | ID
-       | TRUE
-       | FALSE
-       ;
+	   | LIT
+	   ;
 ```
+
 
 # Transformed Grammar
 
 ```antlr
-S      : Assign EOL
-       | Query  EOL
+S      : ID S_ EOL
        ;
-Assign : ID EQ Exp
+S_     : Assign
+       | Query
        ;
-Query  : ID QMARK
+Assign : EQ Exp
        ;
-Exp    : Exp1 Exp_
+Query  : QMARK
        ;
-Exp_   : AND Exp1 Exp_
+E      : T E_
+       ;
+E_     : OR T E_
        | NULL
+	   ;
+T      : F T_
        ;
-Exp1   : Exp2 Exp1_
-       ;
-Exp1_  :  OR Exp2 Exp1_
+T_     : XOR F T_
        | NULL
+	   ;
+F      : A F_
        ;
-Exp2   : Exp3 Exp2_
-       ;
-Exp2_  : XOR Exp3 Exp2_
+F_     : AND A F_
        | NULL
-       ;
-Exp3   : NOT Exp
-       | LP  Exp  RP
+	   ;
+A      : NOT A
+       | G
+	   ;
+G      : LP EXP RP
        | ID
-       | TRUE
-       | FALSE
-       ;
+	   | LIT
+	   ;
 ```

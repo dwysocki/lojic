@@ -53,9 +53,9 @@
      (let [tokens (tokenize input)
            tok    (first tokens)]
        (try
-         (cond
-          (identifier? tok) (parser-identifier tok (rest tokens))
-          :default (throw (parse-error ["[a-z]"] tok)))
+         (if (identifier? tok)
+           (parser-identifier tok (rest tokens))
+           (throw (parse-error ["[a-z]"] tok)))
          (catch clojure.lang.ExceptionInfo e
            (if (= :parse-error (-> e ex-data :cause))
              (.getMessage e)
