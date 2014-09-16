@@ -68,13 +68,13 @@ E      : T  OR T
 T      : F XOR F
        | F
 	   ;
-F      : A AND A
-       | A
-	   ;
-A      :   NOT A
+F      : G AND G
        | G
 	   ;
-G      : LP EXP RP
+G      :   NOT G
+       | A
+	   ;
+A      : LP EXP RP
        | ID
 	   | LIT
 	   ;
@@ -103,15 +103,15 @@ T      : F T_
 T_     : XOR F T_
        | NULL
 	   ;
-F      : A F_
+F      : G F_
        ;
-F_     : AND A F_
+F_     : AND G F_
        | NULL
 	   ;
-A      : NOT A
-       | G
+G      : NOT G
+       | A
 	   ;
-G      : LP EXP RP
+A      : LP EXP RP
        | ID
 	   | LIT
 	   ;
