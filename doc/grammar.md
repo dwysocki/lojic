@@ -64,20 +64,21 @@ Query  : QMARK
        ;
 E      : T  OR T
        | T
-	   ;
+       ;
 T      : F XOR F
        | F
-	   ;
+       ;
 F      : G AND G
        | G
-	   ;
+       ;
 G      :   NOT G
        | A
-	   ;
+       ;
 A      : LP EXP RP
        | ID
-	   | LIT
-	   ;
+       | TRUE
+       | FALSE
+       ;
 ```
 
 
@@ -97,22 +98,23 @@ E      : T E_
        ;
 E_     : OR T E_
        | NULL
-	   ;
+       ;
 T      : F T_
        ;
 T_     : XOR F T_
        | NULL
-	   ;
+       ;
 F      : G F_
        ;
 F_     : AND G F_
        | NULL
-	   ;
+       ;
 G      : NOT G
        | A
-	   ;
+       ;
 A      : LP EXP RP
        | ID
-	   | LIT
-	   ;
+       | TRUE
+       | FALSE
+       ;
 ```
