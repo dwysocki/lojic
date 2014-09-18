@@ -128,10 +128,10 @@ A      : LP EXP RP
 | `Assign` | `{ EQ }`                          | `{ EOL, RP }`                |
 | `Query`  | `{ QMARK }`                       | `{ EOL }`                    |
 | `E`      | `{ NOT, LP, ID, TRUE, FALSE }`    | `{ EOL, RP }`                |
-| `E_`     | `{ NULL, OR }`                    | `{ EO, RP }`                 |
+| `E_`     | `{ NULL, OR }`                    | `{ EOL, RP }`                |
 | `T`      | `{ NOT, LP, ID, TRUE, FALSE }`    | `{ EOL, OR, RP }`            |
-| `T_`     | `{ NULL, XOR }`                   | `{ EOL, RP }`                |
+| `T_`     | `{ NULL, XOR }`                   | `{ EOL, OR, RP }`            |
 | `F`      | `{ NOT, LP, ID, TRUE, FALSE }`    | `{ EOL, XOR, RP }`           |
-| `F_`     | `{ NULL, AND }`                   | `{ EOL, RP }`                |
+| `F_`     | `{ NULL, AND }`                   | `{ EOL, XOR, RP }`           |
 | `G`      | `{ NOT }`                         | `{ EOL, AND, RP }`           |
-| `A`      | `{ LP, ID, TRUE, FALSE }`         | `{ EOL, RP }`                |
+| `A`      | `{ LP, ID, TRUE, FALSE }`         | `{ EOL, OR, XOR, AND, RP }`  |
